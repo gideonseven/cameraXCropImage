@@ -7,7 +7,6 @@ import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -49,11 +48,14 @@ class MainActivity : AppCompatActivity() {
             )
         }
 
+        // setup output directory
         outputDirectory = getOutputDirectory()
 
+        // set as cameraX single thread
         cameraExecutor = Executors.newSingleThreadExecutor()
     }
 
+    // take your photo
     @SuppressLint("RestrictedApi")
     private fun takePhoto() {
         // Get a stable reference of the modifiable image capture use case
@@ -89,12 +91,15 @@ class MainActivity : AppCompatActivity() {
             })
     }
 
+
+    // check permission first
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
         ContextCompat.checkSelfPermission(
             this, it
         ) == PackageManager.PERMISSION_GRANTED
     }
 
+    // create / set save directory for file
     private fun getOutputDirectory(): File {
         val mediaDir = externalMediaDirs.firstOrNull().let {
             File(
@@ -106,6 +111,8 @@ class MainActivity : AppCompatActivity() {
             mediaDir else filesDir
     }
 
+
+    // build cameraX with your desired attributes
     @SuppressLint("UnsafeExperimentalUsageError", "RestrictedApi")
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
@@ -149,6 +156,7 @@ class MainActivity : AppCompatActivity() {
         }, ContextCompat.getMainExecutor(this))
     }
 
+    //  do your thing when permission accepted / not
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -172,22 +180,37 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+
+        // don't forget to shut camera down
         cameraExecutor.shutdown()
     }
 
+    // do other thing after object has been captured
     private fun onImageCaptured(uri: Uri, photoFile: File) {
+
+        // set to bitmap image, with rotation,
+        // by default image will be rotated if saved to bitmap, so the image should be rotated back
+        // to it's default angle
         val bmImg = rotateBitmap(BitmapFactory.decodeFile(uri.path!!), isBackCamera = true)
         println("IMAGE SAVED WIDTH ${bmImg.width}")
         println("IMAGE SAVED HEIGHT ${bmImg.height}")
-//        val bytes = cropImage(bmImg, binding.previewView, binding.borderView)
-        val bytes = cropImage(bmImg, binding.container, binding.borderView)
+
+        // do the cropping
+        val bytes = cropImage(
+            bitmap = bmImg,
+            containerImage = binding.container,
+            width = binding.borderView.mWidth.toInt(),
+            height = binding.borderView.mHeight.toInt(),
+            left = binding.borderView.mLeft.toInt(),
+            top = binding.borderView.mTop.toInt()
+        )
+
         val croppedImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+
+        // save cropped image
         saveImageBitmap(croppedImage, photoFile)
 
-
-//        binding.image.setImageBitmap(croppedImage)
-//        showImage()
-
+        // open preview activity with extra uri
         val intent = Intent(applicationContext, PreviewActivity::class.java)
         intent.putExtra("key", uri.toString())
         startActivity(intent)

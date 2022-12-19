@@ -31,6 +31,14 @@ class VerticalCardViewfinder @JvmOverloads constructor(
     private var actionBarHeight = ctx.resources.getDimension(R.dimen.default_action_bar_height)
     private var mShow = true
 
+    var mTop = 0f
+    var mBot = 0f
+    var mLeft= 0f
+    var mRight = 0f
+    var mWidth = 0f
+    var mHeight = 0f
+
+
     init {
         outerPaint.color = Color.BLACK // mention any background color
         outerPaint.alpha = ctx.resources.getInteger(R.integer.outer_background_alpha)
@@ -82,16 +90,34 @@ class VerticalCardViewfinder @JvmOverloads constructor(
                     bottomDraw
                 ))
 
+            mLeft = leftCard
+            mTop = topDraw
+            mBot = bottomDraw
+            mRight = rightCard
+
+           mWidth = cardRect.width()
+           mHeight = cardRect.height()
+
+            // draw black transparent overlay
             auxCanvas.drawRect(0.0f, 0.0f, width.toFloat(), height.toFloat(), outerPaint)
-            auxCanvas.drawRoundRect(cardRect, radius, radius, innerPaint)
+
+            // draw view inside border line
+             auxCanvas.drawRoundRect(cardRect, radius, radius, innerPaint)
+
+            // draw border line
             auxCanvas.drawRoundRect(cardRect, radius, radius, strokePaint)
+
+            // draw all together  on canvas
             canvas.drawBitmap(bitmap, 0f, 0f, strokePaint)
+
+            // draw text on top of border line
             canvas.drawText(
                 "Position Card in this Frame",
                 (width / 2).toFloat(),
                 ctx.resources.getDimension(R.dimen.margin_small_card_camera_guideline) + actionBarHeight,
                 textPaint
             )
+
             bitmap.recycle()
         }
     }

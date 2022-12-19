@@ -16,7 +16,13 @@ class PreviewActivity : AppCompatActivity() {
 
         intent?.extras?.let {
             val path = it.getString("key")
-            Glide.with(applicationContext).load(path).into(binding.iv)
+            Glide.with(applicationContext).load(path)
+                .fitCenter()
+                .into(binding.iv)
+        }
+
+        binding.btnRetake.setOnClickListener {
+            finish()
         }
     }
 }

@@ -68,6 +68,28 @@ fun cropImage(bitmap: Bitmap, containerImage: View, containerOverlay: View): Byt
     return stream.toByteArray()
 }
 
+fun cropImage(bitmap: Bitmap, containerImage: View, width: Int, height: Int, left: Int, top: Int): ByteArray {
+    val heightOriginal = containerImage.height
+    val widthOriginal = containerImage.width
+    val heightReal = bitmap.height
+    val widthReal = bitmap.width
+    val widthFinal = width * widthReal / widthOriginal
+    val heightFinal = height * heightReal / heightOriginal
+    val leftFinal = left * widthReal / widthOriginal
+    val topFinal = top * heightReal / heightOriginal
+    val bitmapFinal = Bitmap.createBitmap(
+        bitmap,
+        leftFinal, topFinal, widthFinal, heightFinal
+    )
+    val stream = ByteArrayOutputStream()
+    bitmapFinal.compress(
+        Bitmap.CompressFormat.JPEG,
+        100,
+        stream
+    ) //100 is the best quality possibe
+    return stream.toByteArray()
+}
+
 fun saveImageBitmap(finalBitmap: Bitmap, file: File) {
     if (file.exists()) file.delete()
     try {
