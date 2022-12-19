@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
@@ -58,6 +59,11 @@ class MainActivity : AppCompatActivity() {
     // take your photo
     @SuppressLint("RestrictedApi")
     private fun takePhoto() {
+
+        binding.tvProcessingImage.visibility = View.VISIBLE
+        binding.btnOk.visibility = View.GONE
+
+
         // Get a stable reference of the modifiable image capture use case
         val imageCapture = imageCapture ?: return
 
@@ -209,6 +215,9 @@ class MainActivity : AppCompatActivity() {
 
         // save cropped image
         saveImageBitmap(croppedImage, photoFile)
+
+        binding.tvProcessingImage.visibility = View.GONE
+        binding.btnOk.visibility = View.VISIBLE
 
         // open preview activity with extra uri
         val intent = Intent(applicationContext, PreviewActivity::class.java)
