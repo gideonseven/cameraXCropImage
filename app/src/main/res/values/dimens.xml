@@ -1,0 +1,13 @@
+<resources>
+    <dimen name="fab_margin">16dp</dimen>
+    <item name="card_aspect_ratio" format="float" type="dimen">1.586</item>
+    <item name="guideline_round_radius" format="float" type="dimen">30</item>
+    <dimen name="default_action_bar_height">48dp</dimen>
+    <item name="outer_background_alpha" type="integer">150</item>
+    <item name="guideline_stroke_width" format="float" type="dimen">8</item>
+    <dimen name="margin_small_card_camera_guideline">48dp</dimen>
+    <dimen name="margin_big_card_camera_guideline">64dp</dimen>
+    <dimen name="camera_control_height">145dp</dimen>
+    <dimen name="text_size_normal">12sp</dimen>
+
+</resources>
