@@ -2,7 +2,6 @@ package com.example.cameraxcropimage
 
 import android.graphics.Bitmap
 import android.graphics.Matrix
-import android.os.Environment
 import android.view.View
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -68,7 +67,14 @@ fun cropImage(bitmap: Bitmap, containerImage: View, containerOverlay: View): Byt
     return stream.toByteArray()
 }
 
-fun cropImage(bitmap: Bitmap, containerImage: View, width: Int, height: Int, left: Int, top: Int): ByteArray {
+fun cropImage(
+    bitmap: Bitmap,
+    containerImage: View,
+    width: Int,
+    height: Int,
+    left: Int,
+    top: Int
+): ByteArray {
     val heightOriginal = containerImage.height
     val widthOriginal = containerImage.width
     val heightReal = bitmap.height
@@ -94,7 +100,7 @@ fun saveImageBitmap(finalBitmap: Bitmap, file: File) {
     if (file.exists()) file.delete()
     try {
         val out = FileOutputStream(file)
-        finalBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
+        finalBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
         out.flush()
         out.close()
     } catch (e: Exception) {

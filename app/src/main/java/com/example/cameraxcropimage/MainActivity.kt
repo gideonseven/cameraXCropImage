@@ -204,7 +204,7 @@ class MainActivity : AppCompatActivity() {
         // do the cropping
         val bytes = cropImage(
             bitmap = bmImg,
-            containerImage = binding.container,
+            containerImage = binding.previewView,
             width = binding.borderView.mWidth.toInt(),
             height = binding.borderView.mHeight.toInt(),
             left = binding.borderView.mLeft.toInt(),

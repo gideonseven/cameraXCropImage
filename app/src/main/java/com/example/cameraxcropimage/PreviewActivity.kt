@@ -15,10 +15,9 @@ class PreviewActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         intent?.extras?.let {
-            val path = it.getString("key")
-            Glide.with(applicationContext).load(path)
-                .fitCenter()
-                .into(binding.iv)
+            val path = it.getString("key") ?: ""
+            println("MY PATH ==== $path")
+            Glide.with(applicationContext).load(path).into(binding.iv)
         }
 
         binding.btnRetake.setOnClickListener {
