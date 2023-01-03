@@ -8,6 +8,8 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.util.Rational
+import android.view.Surface
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -138,12 +140,24 @@ class MainActivity : AppCompatActivity() {
                 .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
                 .build()
 
+            /**
+             * use viewport to match previewview and captured image size
+             */
+            val viewPort = ViewPort.Builder(
+                Rational(
+                    binding.previewView.width,
+                    binding.previewView.height
+                ), Surface.ROTATION_0
+            )
+                .setScaleType(ViewPort.FILL_CENTER)
+                .build()
             // Select back camera as a default
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
             val useCaseGroup = UseCaseGroup.Builder()
                 .addUseCase(preview)
                 .addUseCase(imageCapture!!)
+                .setViewPort(viewPort)
                 .build()
 
             try {

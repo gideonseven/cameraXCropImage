@@ -41,32 +41,6 @@ fun rotateBitmap(bitmap: Bitmap, isBackCamera: Boolean = false): Bitmap {
     }
 }
 
-fun cropImage(bitmap: Bitmap, containerImage: View, containerOverlay: View): ByteArray {
-    val heightOriginal = containerImage.height
-    val widthOriginal = containerImage.width
-    val heightFrame = containerOverlay.height
-    val widthFrame = containerOverlay.width
-    val leftFrame = containerOverlay.left
-    val topFrame = containerOverlay.top
-    val heightReal = bitmap.height
-    val widthReal = bitmap.width
-    val widthFinal = widthFrame * widthReal / widthOriginal
-    val heightFinal = heightFrame * heightReal / heightOriginal
-    val leftFinal = leftFrame * widthReal / widthOriginal
-    val topFinal = topFrame * heightReal / heightOriginal
-    val bitmapFinal = Bitmap.createBitmap(
-        bitmap,
-        leftFinal, topFinal, widthFinal, heightFinal
-    )
-    val stream = ByteArrayOutputStream()
-    bitmapFinal.compress(
-        Bitmap.CompressFormat.JPEG,
-        100,
-        stream
-    ) //100 is the best quality possibe
-    return stream.toByteArray()
-}
-
 fun cropImage(
     bitmap: Bitmap,
     guideline: VerticalCardViewfinder,
@@ -80,6 +54,17 @@ fun cropImage(
     val heightFinal = guideline.getGuidelineHeight() * heightReal / heightOriginal
     val leftFinal = guideline.getGuidelineLeft() * widthReal / widthOriginal
     val topFinal = guideline.getGuidelineTop() * heightReal / heightOriginal
+
+
+    println("widthOriginal ${widthOriginal}")
+    println("heightOriginal ${heightOriginal}")
+    println("widthReal ${widthReal}")
+    println("heightReal ${heightReal}")
+    println("widthFinal ${widthFinal}")
+    println("heightFinal ${heightFinal}")
+    println("leftFinal ${leftFinal}")
+    println("topFinal ${topFinal}")
+
     val bitmapFinal = Bitmap.createBitmap(
         bitmap,
         leftFinal, topFinal, widthFinal, heightFinal
