@@ -30,12 +30,12 @@ class VerticalCardViewfinder @JvmOverloads constructor(
     private var actionBarHeight = ctx.resources.getDimension(R.dimen.default_action_bar_height)
     private var mShow = true
 
-    var mTop = 0f
-    var mBot = 0f
-    var mLeft = 0f
-    var mRight = 0f
-    var mWidth = 0f
-    var mHeight = 0f
+    private var guidelineTop = 0f
+    private var guidelineBot = 0f
+    private var guidelineLeft = 0f
+    private var guidelineRight = 0f
+    private var guidelineWidth = 0f
+    private var guidelineHeight = 0f
 
 
     init {
@@ -91,13 +91,13 @@ class VerticalCardViewfinder @JvmOverloads constructor(
                 )
             )
 
-            mLeft = leftDraw
-            mTop = topDraw
-            mRight = rightDraw
-            mBot = bottomDraw
+            guidelineLeft = leftDraw
+            guidelineTop = topDraw
+            guidelineRight = rightDraw
+            guidelineBot = bottomDraw
 
-            mWidth = cardRect.width()
-            mHeight = cardRect.height()
+            guidelineWidth = guidelineRight - guidelineLeft
+            guidelineHeight = guidelineBot - guidelineTop
 
             // draw black transparent overlay
             auxCanvas.drawRect(0.0f, 0.0f, width.toFloat(), height.toFloat(), outerPaint)
@@ -130,4 +130,9 @@ class VerticalCardViewfinder @JvmOverloads constructor(
             bitmap.recycle()
         }
     }
+
+    fun getGuidelineWidth() = guidelineWidth.toInt()
+    fun getGuidelineHeight() = guidelineHeight.toInt()
+    fun getGuidelineLeft() = guidelineLeft.toInt()
+    fun getGuidelineTop() = guidelineTop.toInt()
 }

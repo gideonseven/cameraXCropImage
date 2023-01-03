@@ -47,10 +47,10 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <androidx.appcompat.widget.AppCompatTextView
-        android:background="@color/black"
         android:id="@+id/tv_processing_image"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/black"
         android:gravity="center"
         android:text="@string/processing_image"
         android:textColor="@android:color/holo_red_dark"

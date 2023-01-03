@@ -69,20 +69,17 @@ fun cropImage(bitmap: Bitmap, containerImage: View, containerOverlay: View): Byt
 
 fun cropImage(
     bitmap: Bitmap,
-    containerImage: View,
-    width: Int,
-    height: Int,
-    left: Int,
-    top: Int
+    guideline: VerticalCardViewfinder,
 ): ByteArray {
-    val heightOriginal = containerImage.height
-    val widthOriginal = containerImage.width
+    val heightOriginal = guideline.height
+    val widthOriginal = guideline.width
     val heightReal = bitmap.height
     val widthReal = bitmap.width
-    val widthFinal = width * widthReal / widthOriginal
-    val heightFinal = height * heightReal / heightOriginal
-    val leftFinal = left * widthReal / widthOriginal
-    val topFinal = top * heightReal / heightOriginal
+
+    val widthFinal = guideline.getGuidelineWidth() * widthReal / widthOriginal
+    val heightFinal = guideline.getGuidelineHeight() * heightReal / heightOriginal
+    val leftFinal = guideline.getGuidelineLeft() * widthReal / widthOriginal
+    val topFinal = guideline.getGuidelineTop() * heightReal / heightOriginal
     val bitmapFinal = Bitmap.createBitmap(
         bitmap,
         leftFinal, topFinal, widthFinal, heightFinal
