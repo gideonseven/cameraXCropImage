@@ -140,8 +140,30 @@ class MainActivity : AppCompatActivity() {
                 .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
                 .build()
 
+
             /**
-             * use viewport to match previewview and captured image size
+             * by default cameraX capture and save image in landscape / wide view
+             * and it is not match by what it appears on PreviewView (screen of
+             * android phone)
+             *
+             * example :
+             * android Screen (portrait position)
+             *  -------
+             *  - abc -
+             *  - abc -
+             *  -------
+             *
+             *  what cameraX captured and saved (landscape wide view) -
+             *  without ViewPort
+             *  ----------------
+             *  -  abcdefghijk   -
+             *  -  abcdefghijk   -
+             *  -  abcdefghijk   -
+             *  ----------------
+             *
+             * ViewPort come in handy to handle that, by cropping Rational using
+             * ViewPortBuilder with PreviewView width and height,
+             * so what it appear on android screen, is what image will be saved
              */
             val viewPort = ViewPort.Builder(
                 Rational(
@@ -212,8 +234,6 @@ class MainActivity : AppCompatActivity() {
         // by default image will be rotated if saved to bitmap, so the image should be rotated back
         // to it's default angle
         val bmImg = rotateBitmap(BitmapFactory.decodeFile(uri.path!!), isBackCamera = true)
-        println("IMAGE SAVED WIDTH ${bmImg.width}")
-        println("IMAGE SAVED HEIGHT ${bmImg.height}")
 
         // do the cropping
         val bytes = cropImage(

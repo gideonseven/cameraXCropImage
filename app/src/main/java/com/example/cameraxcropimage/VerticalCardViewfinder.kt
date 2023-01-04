@@ -7,6 +7,7 @@ import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.View
 import androidx.core.content.res.ResourcesCompat
+import timber.log.Timber
 
 
 /**
@@ -73,14 +74,17 @@ class VerticalCardViewfinder @JvmOverloads constructor(
             val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
             val auxCanvas = Canvas(bitmap)
 
+            //cr 80, width 86mm x height 54mm -  ratio 43:27
+            // 43 width
+            // 27 height
+            val ratioWidth = 43
+            val ratioHeight = 27
+
+            // measurement
             val leftDraw = 0f
             val rightDraw = width.toFloat()
-//            val topDraw = ctx.resources.getDimension(R.dimen.margin_big_card_camera_guideline) + actionBarHeight + 500
-            val topDraw =
-                height.toFloat() / 2 - ctx.resources.getDimension(R.dimen.card_height_half)
-//            val bottomDraw = (height - ctx.resources.getDimension(R.dimen.camera_control_height) - ctx.resources.getDimension(R.dimen.margin_small_card_camera_guideline))
-            val bottomDraw =
-                height.toFloat() / 2 + ctx.resources.getDimension(R.dimen.card_height_half)
+            val topDraw = (height.toFloat() - (width.toFloat() * ratioHeight / ratioWidth)) / 2
+            val bottomDraw = height.toFloat()/2 + topDraw /2
 
             cardRect.set(
                 RectF(
