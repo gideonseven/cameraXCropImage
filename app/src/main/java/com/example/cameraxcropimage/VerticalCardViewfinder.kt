@@ -43,7 +43,8 @@ class VerticalCardViewfinder @JvmOverloads constructor(
 
         strokePaint.color = Color.WHITE
         strokePaint.style = Paint.Style.STROKE
-        strokePaint.strokeWidth = ResourcesCompat.getFloat(ctx.resources, R.dimen.guideline_stroke_width)
+        strokePaint.strokeWidth =
+            ResourcesCompat.getFloat(ctx.resources, R.dimen.guideline_stroke_width)
 
         textPaint.color = Color.WHITE
         textPaint.textSize = ctx.resources.getDimension(R.dimen.text_size_normal)
@@ -51,7 +52,9 @@ class VerticalCardViewfinder @JvmOverloads constructor(
 
         val tv = TypedValue()
         if (ctx.theme.resolveAttribute(androidx.appcompat.R.attr.actionBarSize, tv, true)) {
-            actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data, ctx.resources.displayMetrics).toFloat()
+            actionBarHeight =
+                TypedValue.complexToDimensionPixelSize(tv.data, ctx.resources.displayMetrics)
+                    .toFloat()
         }
     }
 
@@ -63,10 +66,14 @@ class VerticalCardViewfinder @JvmOverloads constructor(
             val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
             val auxCanvas = Canvas(bitmap)
 
-            val leftDraw  = 0f
-            val rightDraw  = width.toFloat()
-            val topDraw = ctx.resources.getDimension(R.dimen.margin_big_card_camera_guideline) + actionBarHeight
-            val bottomDraw = (height - ctx.resources.getDimension(R.dimen.camera_control_height) - ctx.resources.getDimension(R.dimen.margin_small_card_camera_guideline))
+            val leftDraw = 0f
+            val rightDraw = width.toFloat()
+            val topDraw =
+                ctx.resources.getDimension(R.dimen.margin_big_card_camera_guideline) + actionBarHeight
+            val bottomDraw =
+                (height - ctx.resources.getDimension(R.dimen.camera_control_height) - ctx.resources.getDimension(
+                    R.dimen.margin_small_card_camera_guideline
+                ))
 
             val heightCard = bottomDraw - topDraw
             val widthCard = heightCard / cardAspectRatio
@@ -80,7 +87,8 @@ class VerticalCardViewfinder @JvmOverloads constructor(
                     topDraw,
                     rightCard,
                     bottomDraw
-                ))
+                )
+            )
 
             auxCanvas.drawRect(0.0f, 0.0f, width.toFloat(), height.toFloat(), outerPaint)
             auxCanvas.drawRoundRect(cardRect, radius, radius, innerPaint)
