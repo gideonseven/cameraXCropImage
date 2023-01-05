@@ -7,6 +7,8 @@ import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
+import android.util.Rational
+import android.view.Surface
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
@@ -124,12 +126,47 @@ class MainActivity : AppCompatActivity() {
                 .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
                 .build()
 
+
+            /**
+             * by default cameraX capture and save image in landscape / wide view
+             * and it is not match by what it appears on PreviewView (screen of
+             * android phone)
+             *
+             * example :
+             * android Screen (portrait position)
+             *  -------
+             *  - abc -
+             *  - abc -
+             *  -------
+             *
+             *  what cameraX captured and saved (landscape wide view) -
+             *  without ViewPort
+             *  ----------------
+             *  -  abcdefghijk   -
+             *  -  abcdefghijk   -
+             *  -  abcdefghijk   -
+             *  ----------------
+             *
+             * ViewPort come in handy to handle that, by cropping Rational using
+             * ViewPortBuilder with PreviewView width and height,
+             * so what it appear on android screen, is what image will be saved
+             */
+            val viewPort = ViewPort.Builder(
+                Rational(
+                    binding.previewView.width,
+                    binding.previewView.height
+                ), Surface.ROTATION_0
+            )
+                .setScaleType(ViewPort.FILL_CENTER)
+                .build()
+
             // Select back camera as a default
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
             val useCaseGroup = UseCaseGroup.Builder()
                 .addUseCase(preview)
                 .addUseCase(imageCapture!!)
+                .setViewPort(viewPort)
                 .build()
 
             try {
