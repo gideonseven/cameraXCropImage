@@ -7,7 +7,6 @@ import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
@@ -15,6 +14,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.cameraxcropimage.databinding.ActivityMainBinding
+import timber.log.Timber
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -75,7 +75,7 @@ class MainActivity : AppCompatActivity() {
             ContextCompat.getMainExecutor(this),
             object : ImageCapture.OnImageSavedCallback {
                 override fun onError(exc: ImageCaptureException) {
-                    Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
+                    Timber.tag(TAG).e(exc, "Photo capture failed: %s", exc.message)
                 }
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
@@ -83,7 +83,7 @@ class MainActivity : AppCompatActivity() {
                     onImageCaptured(savedUri, photoFile)
                     val msg = "Photo capture succeeded: $savedUri"
                     Toast.makeText(this@MainActivity, msg, Toast.LENGTH_SHORT).show()
-                    Log.d(TAG, msg)
+                    Timber.tag(TAG).d(msg)
                 }
             })
     }
@@ -142,7 +142,7 @@ class MainActivity : AppCompatActivity() {
                 )
 
             } catch (exc: Exception) {
-                Log.e(TAG, "Use case binding failed", exc)
+                Timber.tag(TAG).e(exc, "Use case binding failed")
             }
 
         }, ContextCompat.getMainExecutor(this))
