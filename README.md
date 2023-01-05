@@ -1,6 +1,6 @@
 # Crop Image
 
-Simple Example of Capturing Image using CameraX, crop it match the size of guideline.
+Simple Example of Capturing Image using CameraX, crop it match the size of guideline. 
 
 ## Dependency used
 
