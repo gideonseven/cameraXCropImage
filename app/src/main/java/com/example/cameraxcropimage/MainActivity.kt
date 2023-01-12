@@ -4,10 +4,11 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.BitmapFactory
+import android.graphics.*
+import android.media.Image
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.util.Rational
 import android.view.Surface
 import android.view.View
@@ -15,20 +16,28 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
+import androidx.camera.view.transform.CoordinateTransform
+import androidx.camera.view.transform.ImageProxyTransformFactory
+import androidx.camera.view.transform.OutputTransform
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.toRect
 import com.example.cameraxcropimage.databinding.ActivityMainBinding
-import java.io.File
+import timber.log.Timber
+import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
     private var imageCapture: ImageCapture? = null
+    val PIC_CROP = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -79,6 +88,33 @@ class MainActivity : AppCompatActivity() {
         // Create output options object which contains file + metadata
         val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 
+//        imageCapture.setViewPortCropRect(binding.borderView.getGuidelineRectF().toRect())
+//        imageCapture.takePicture(ContextCompat.getMainExecutor(this), object: ImageCapture.OnImageCapturedCallback() {
+//            @SuppressLint("UnsafeOptInUsageError")
+//            override fun onCaptureSuccess(image: ImageProxy) {
+                // Use the image, then make sure to close it.
+//                val source : OutputTransform? = binding.preview2.outputTransform
+//                val target = ImageProxyTransformFactory().getOutputTransform(image)
+//
+//
+//
+//                source?.let { src ->
+//                    val coordinateTransform = CoordinateTransform(src, target)
+//                    coordinateTransform.transform(getCorrectionMatrix(imageProxy = image, binding.preview2))
+//                }
+//                image.setCropRect(binding.borderView.getGuidelineRectF().toRect())
+//                Timber.e("=== IMAGE WIDTH ${image.image?.width}")
+//                Timber.e("=== IMAGE HEIGHT ${image.image?.height}")
+
+//                image.close()
+//            }
+
+//            override fun onError(exception: ImageCaptureException) {
+//                val errorType = exception.getImageCaptureError()
+//                Timber.e("=== ${errorType}")
+//            }
+//        })
+
         // Set up image capture listener, which is triggered after photo has
         // been taken
         imageCapture.takePicture(
@@ -86,7 +122,7 @@ class MainActivity : AppCompatActivity() {
             ContextCompat.getMainExecutor(this),
             object : ImageCapture.OnImageSavedCallback {
                 override fun onError(exc: ImageCaptureException) {
-                    Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
+//                    Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
                 }
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
@@ -94,11 +130,10 @@ class MainActivity : AppCompatActivity() {
                     onImageCaptured(savedUri, photoFile)
                     val msg = "Photo capture succeeded: $savedUri"
                     Toast.makeText(this@MainActivity, msg, Toast.LENGTH_SHORT).show()
-                    Log.d(TAG, msg)
+//                    Log.d(TAG, msg)
                 }
             })
     }
-
 
     // check permission first
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
@@ -137,7 +172,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
             imageCapture = ImageCapture.Builder()
-                .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+                .setCaptureMode(ImageCapture.CAPTURE_MODE_ZERO_SHUTTER_LAG)
                 .build()
 
 
@@ -192,7 +227,7 @@ class MainActivity : AppCompatActivity() {
                 )
 
             } catch (exc: Exception) {
-                Log.e(TAG, "Use case binding failed", exc)
+                Timber.e(TAG, "Use case binding failed", exc)
             }
 
         }, ContextCompat.getMainExecutor(this))
@@ -233,18 +268,18 @@ class MainActivity : AppCompatActivity() {
         // set to bitmap image, with rotation,
         // by default image will be rotated if saved to bitmap, so the image should be rotated back
         // to it's default angle
-        val bmImg = rotateBitmap(BitmapFactory.decodeFile(uri.path!!), isBackCamera = true)
+//        val bmImg = rotateBitmap(BitmapFactory.decodeFile(uri.path!!), isBackCamera = true)
 
         // do the cropping
-        val bytes = cropImage(
-            bitmap = bmImg,
-            guideline = binding.borderView
-        )
+//        val bytes = cropImage(
+//            bitmap = bmImg,
+//            guideline = binding.borderView
+//        )
 
-        val croppedImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+//        val croppedImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
 
         // save cropped image
-        saveImageBitmap(croppedImage, photoFile)
+//        saveImageBitmap(croppedImage, photoFile)
 
         binding.tvProcessingImage.visibility = View.GONE
         binding.btnOk.visibility = View.VISIBLE
@@ -253,6 +288,51 @@ class MainActivity : AppCompatActivity() {
         val intent = Intent(applicationContext, PreviewActivity::class.java)
         intent.putExtra("key", uri.toString())
         startActivity(intent)
+    }
+
+    fun getCorrectionMatrix(imageProxy: ImageProxy, previewView: PreviewView) : Matrix {
+        val cropRect = imageProxy.cropRect
+        val rotationDegrees = imageProxy.imageInfo.rotationDegrees
+        val matrix = Matrix()
+
+        // A float array of the source vertices (crop rect) in clockwise order.
+        val source = floatArrayOf(
+            cropRect.left.toFloat(),
+            cropRect.top.toFloat(),
+            cropRect.right.toFloat(),
+            cropRect.top.toFloat(),
+            cropRect.right.toFloat(),
+            cropRect.bottom.toFloat(),
+            cropRect.left.toFloat(),
+            cropRect.bottom.toFloat()
+        )
+
+        // A float array of the destination vertices in clockwise order.
+        val destination = floatArrayOf(
+            0f,
+            0f,
+            previewView.width.toFloat(),
+            0f,
+            previewView.width.toFloat(),
+            previewView.height.toFloat(),
+            0f,
+            previewView.height.toFloat()
+        )
+
+        // The destination vertexes need to be shifted based on rotation degrees. The
+        // rotation degree represents the clockwise rotation needed to correct the image.
+
+        // Each vertex is represented by 2 float numbers in the vertices array.
+        val vertexSize = 2
+        // The destination needs to be shifted 1 vertex for every 90° rotation.
+        val shiftOffset = rotationDegrees / 90 * vertexSize;
+        val tempArray = destination.clone()
+        for (toIndex in source.indices) {
+            val fromIndex = (toIndex + shiftOffset) % source.size
+            destination[toIndex] = tempArray[fromIndex]
+        }
+        matrix.setPolyToPoly(source, 0, destination, 0, 4)
+        return matrix
     }
 
     companion object {

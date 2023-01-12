@@ -139,4 +139,8 @@ class VerticalCardViewfinder @JvmOverloads constructor(
     fun getGuidelineHeight() = guidelineHeight.toInt()
     fun getGuidelineLeft() = guidelineLeft.toInt()
     fun getGuidelineTop() = guidelineTop.toInt()
+    fun getGuidelineRight() = guidelineRight.toInt()
+    fun getGuidelineBottom() = guidelineBot.toInt()
+    fun getGuidelineRectF() =
+        RectF(guidelineLeft, guidelineTop, guidelineRight, guidelineBot)
 }
