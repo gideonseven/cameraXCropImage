@@ -5,10 +5,9 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.*
-import android.media.Image
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.util.Rational
 import android.view.Surface
 import android.view.View
@@ -17,12 +16,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
-import androidx.camera.view.transform.CoordinateTransform
-import androidx.camera.view.transform.ImageProxyTransformFactory
-import androidx.camera.view.transform.OutputTransform
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.toRect
+import androidx.core.net.toUri
+import androidx.core.view.isGone
+import com.bumptech.glide.Glide
 import com.example.cameraxcropimage.databinding.ActivityMainBinding
 import timber.log.Timber
 import java.io.*
@@ -65,75 +63,11 @@ class MainActivity : AppCompatActivity() {
 
         // set as cameraX single thread
         cameraExecutor = Executors.newSingleThreadExecutor()
+
+        binding.iv.visibility = View.GONE
     }
 
-    // take your photo
-    @SuppressLint("RestrictedApi")
-    private fun takePhoto() {
 
-        binding.tvProcessingImage.visibility = View.VISIBLE
-        binding.btnOk.visibility = View.GONE
-
-
-        // Get a stable reference of the modifiable image capture use case
-        val imageCapture = imageCapture ?: return
-
-        val photoFile = File(
-            outputDirectory,
-            SimpleDateFormat(
-                FILENAME_FORMAT, Locale.US
-            ).format(System.currentTimeMillis()) + ".jpg"
-        )
-
-        // Create output options object which contains file + metadata
-        val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
-
-//        imageCapture.setViewPortCropRect(binding.borderView.getGuidelineRectF().toRect())
-//        imageCapture.takePicture(ContextCompat.getMainExecutor(this), object: ImageCapture.OnImageCapturedCallback() {
-//            @SuppressLint("UnsafeOptInUsageError")
-//            override fun onCaptureSuccess(image: ImageProxy) {
-                // Use the image, then make sure to close it.
-//                val source : OutputTransform? = binding.preview2.outputTransform
-//                val target = ImageProxyTransformFactory().getOutputTransform(image)
-//
-//
-//
-//                source?.let { src ->
-//                    val coordinateTransform = CoordinateTransform(src, target)
-//                    coordinateTransform.transform(getCorrectionMatrix(imageProxy = image, binding.preview2))
-//                }
-//                image.setCropRect(binding.borderView.getGuidelineRectF().toRect())
-//                Timber.e("=== IMAGE WIDTH ${image.image?.width}")
-//                Timber.e("=== IMAGE HEIGHT ${image.image?.height}")
-
-//                image.close()
-//            }
-
-//            override fun onError(exception: ImageCaptureException) {
-//                val errorType = exception.getImageCaptureError()
-//                Timber.e("=== ${errorType}")
-//            }
-//        })
-
-        // Set up image capture listener, which is triggered after photo has
-        // been taken
-        imageCapture.takePicture(
-            outputOptions,
-            ContextCompat.getMainExecutor(this),
-            object : ImageCapture.OnImageSavedCallback {
-                override fun onError(exc: ImageCaptureException) {
-//                    Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
-                }
-
-                override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                    val savedUri = Uri.fromFile(photoFile)
-                    onImageCaptured(savedUri, photoFile)
-                    val msg = "Photo capture succeeded: $savedUri"
-                    Toast.makeText(this@MainActivity, msg, Toast.LENGTH_SHORT).show()
-//                    Log.d(TAG, msg)
-                }
-            })
-    }
 
     // check permission first
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
@@ -171,10 +105,10 @@ class MainActivity : AppCompatActivity() {
                     it.setSurfaceProvider(binding.previewView.surfaceProvider)
                 }
 
+
             imageCapture = ImageCapture.Builder()
                 .setCaptureMode(ImageCapture.CAPTURE_MODE_ZERO_SHUTTER_LAG)
                 .build()
-
 
             /**
              * by default cameraX capture and save image in landscape / wide view
@@ -208,6 +142,7 @@ class MainActivity : AppCompatActivity() {
             )
                 .setScaleType(ViewPort.FILL_CENTER)
                 .build()
+
             // Select back camera as a default
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
@@ -231,6 +166,86 @@ class MainActivity : AppCompatActivity() {
             }
 
         }, ContextCompat.getMainExecutor(this))
+    }
+
+
+    // take your photo
+    @SuppressLint("RestrictedApi")
+    private fun takePhoto() {
+
+        binding.btnOk.visibility = View.GONE
+
+
+        // Get a stable reference of the modifiable image capture use case
+        val imageCapture = imageCapture ?: return
+
+        val photoFile = File(
+            outputDirectory,
+            SimpleDateFormat(
+                FILENAME_FORMAT, Locale.US
+            ).format(System.currentTimeMillis()) + ".jpg"
+        )
+
+        // Create output options object which contains file + metadata
+//      val outputFileOption =   ImageCapture.OutputFileOptions.Builder(photoFile).build()
+
+//      imageCapture.setViewPortCropRect(binding.borderView.getGuidelineRectF().toRect())
+//        imageCapture.takePicture(ContextCompat.getMainExecutor(this), object: ImageCapture.OnImageCapturedCallback() {
+        imageCapture.takePicture(cameraExecutor, object: ImageCapture.OnImageCapturedCallback() {
+            @SuppressLint("UnsafeOptInUsageError")
+            override fun onCaptureSuccess(image: ImageProxy) {
+                val savedUri = Uri.fromFile(photoFile)
+
+                Glide.with(applicationContext).load(image).into(binding.iv)
+
+                Timber.e("=== GET IMAGE INFO ${image.imageInfo}")
+                Timber.e("=== GET  IMAGE FORMAT ${image.format}")
+
+        // Use the image, then make sure to close it.
+//                val source : OutputTransform? = binding.previewView.outputTransform
+//                val target = ImageProxyTransformFactory().getOutputTransform(image)
+//
+//
+//
+//                source?.let { src ->
+//                    val coordinateTransform = CoordinateTransform(src, target)
+//                    coordinateTransform.transform(getCorrectionMatrix(imageProxy = image, binding.previewView))
+//                }
+//                image.setCropRect(binding.borderView.getGuidelineRectF().toRect())
+//                Timber.e("=== IMAGE WIDTH ${image.image?.width}")
+//                Timber.e("=== IMAGE HEIGHT ${image.image?.height}")
+//
+
+//
+                image.close()
+
+//                finish()
+            }
+//
+            override fun onError(exception: ImageCaptureException) {
+                val errorType = exception.getImageCaptureError()
+                Timber.e("=== ${errorType}")
+            }
+        })
+
+        // Set up image capture listener, which is triggered after photo has
+        // been taken
+//        imageCapture.takePicture(
+//            outputOptions,
+//            ContextCompat.getMainExecutor(this),
+//            object : ImageCapture.OnImageSavedCallback {
+//                override fun onError(exc: ImageCaptureException) {
+//                    Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
+//                }
+
+//                override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+//                    val savedUri = Uri.fromFile(photoFile)
+//                    goToPreviewView(savedUri, photoFile)
+//                    val msg = "Photo capture succeeded: $savedUri"
+//                    Toast.makeText(this@MainActivity, msg, Toast.LENGTH_SHORT).show()
+//                    Log.d(TAG, msg)
+//                }
+//            })
     }
 
     //  do your thing when permission accepted / not
@@ -262,8 +277,8 @@ class MainActivity : AppCompatActivity() {
         cameraExecutor.shutdown()
     }
 
-    // do other thing after object has been captured
-    private fun onImageCaptured(uri: Uri, photoFile: File) {
+    // go to previewActivity
+    private fun goToPreviewView(uri: Uri, photoFile: File) {
 
         // set to bitmap image, with rotation,
         // by default image will be rotated if saved to bitmap, so the image should be rotated back
