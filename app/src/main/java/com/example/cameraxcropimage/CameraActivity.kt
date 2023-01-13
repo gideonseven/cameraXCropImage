@@ -228,28 +228,34 @@ class CameraActivity : AppCompatActivity() {
     }
 
     // crop image and go to preview activity
-    @OptIn(DelicateCoroutinesApi::class)
     private fun goToPreviewActivity(uri: Uri, photoFile: File) {
         uri.path?.let { path ->
 
-            //to avoid heavy task related BITMAP on main thread
+            //to avoid heavy task related BITMAP on MainThread
             //assign to IO
-            GlobalScope.launch(Dispatchers.IO) {
+            CoroutineScope(Dispatchers.IO).launch {
+                //1. rotate bitmap
                 val bmImg = rotateBitmap(BitmapFactory.decodeFile(path), isBackCamera = true)
                 println("IMAGE SAVED WIDTH ${bmImg.width}")
                 println("IMAGE SAVED HEIGHT ${bmImg.height}")
+
+                //2. convert to bytes, applying cropping
                 val bytes = cropImage(bmImg, binding.borderView)
+
+                //3. decode to bitmap
                 val croppedImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+
+                //4. rewrite photoFile
                 saveImageBitmap(croppedImage, photoFile)
 
                 launch(Dispatchers.Main) {
-                    // hide loading
-                    showLoading(false)
-
                     // open preview activity with extra uri
                     val intent = Intent(applicationContext, PreviewActivity::class.java)
                     intent.putExtra("key", uri.toString())
                     startActivity(intent)
+
+                    // hide loading
+                    showLoading(false)
                 }
             }
         }
