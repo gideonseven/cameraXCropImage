@@ -2,7 +2,6 @@ package com.example.cameraxcropimage
 
 import android.graphics.Bitmap
 import android.graphics.Matrix
-import android.view.View
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
@@ -43,27 +42,27 @@ fun rotateBitmap(bitmap: Bitmap, isBackCamera: Boolean = false): Bitmap {
 
 fun cropImage(
     bitmap: Bitmap,
-    guideline: VerticalCardViewfinder,
+    verticalCardViewFinder: VerticalCardViewfinder,
 ): ByteArray {
-    val heightOriginal = guideline.height
-    val widthOriginal = guideline.width
+    val heightOriginal = verticalCardViewFinder.height
+    val widthOriginal = verticalCardViewFinder.width
     val heightReal = bitmap.height
     val widthReal = bitmap.width
 
-    val widthFinal = guideline.getGuidelineWidth() * widthReal / widthOriginal
-    val heightFinal = guideline.getGuidelineHeight() * heightReal / heightOriginal
-    val leftFinal = guideline.getGuidelineLeft() * widthReal / widthOriginal
-    val topFinal = guideline.getGuidelineTop() * heightReal / heightOriginal
+    val widthFinal = verticalCardViewFinder.getGuidelineWidth() * widthReal / widthOriginal
+    val heightFinal = verticalCardViewFinder.getGuidelineHeight() * heightReal / heightOriginal
+    val leftFinal = verticalCardViewFinder.getGuidelineLeft() * widthReal / widthOriginal
+    val topFinal = verticalCardViewFinder.getGuidelineTop() * heightReal / heightOriginal
 
 
-    println("widthOriginal ${widthOriginal}")
-    println("heightOriginal ${heightOriginal}")
-    println("widthReal ${widthReal}")
-    println("heightReal ${heightReal}")
-    println("widthFinal ${widthFinal}")
-    println("heightFinal ${heightFinal}")
-    println("leftFinal ${leftFinal}")
-    println("topFinal ${topFinal}")
+    println("widthOriginal $widthOriginal")
+    println("heightOriginal $heightOriginal")
+    println("widthReal $widthReal")
+    println("heightReal $heightReal")
+    println("widthFinal $widthFinal")
+    println("heightFinal $heightFinal")
+    println("leftFinal $leftFinal")
+    println("topFinal $topFinal")
 
     val bitmapFinal = Bitmap.createBitmap(
         bitmap,

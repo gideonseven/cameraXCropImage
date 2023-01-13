@@ -20,7 +20,7 @@ class PreviewActivity : AppCompatActivity() {
             Glide.with(applicationContext).load(path).into(binding.iv)
         }
 
-        binding.btnRetake.setOnClickListener {
+        binding.btnTake.setOnClickListener {
             finish()
         }
     }

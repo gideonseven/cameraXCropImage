@@ -7,7 +7,6 @@ import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.View
 import androidx.core.content.res.ResourcesCompat
-import timber.log.Timber
 
 
 /**
@@ -84,7 +83,7 @@ class VerticalCardViewfinder @JvmOverloads constructor(
             val leftDraw = 0f
             val rightDraw = width.toFloat()
             val topDraw = (height.toFloat() - (width.toFloat() * ratioHeight / ratioWidth)) / 2
-            val bottomDraw = height.toFloat()/2 + topDraw /2
+            val bottomDraw = height.toFloat() / 2 + topDraw / 2
 
             cardRect.set(
                 RectF(
@@ -117,7 +116,7 @@ class VerticalCardViewfinder @JvmOverloads constructor(
 
             // draw 1st text on top of border
             canvas.drawText(
-                "Pastikan gambar ada pada area frame",
+                "Please make sure the image",
                 (width / 2).toFloat(),
                 topDraw - ctx.resources.getDimension(R.dimen._60dp) - ctx.resources.getDimension(R.dimen._16dp),
                 textPaint
@@ -125,7 +124,7 @@ class VerticalCardViewfinder @JvmOverloads constructor(
 
             // draw 2nd text on top of border
             canvas.drawText(
-                "dan dapat terbaca dengan jelas.",
+                "is clear, and readable",
                 (width / 2).toFloat(),
                 topDraw - ctx.resources.getDimension(R.dimen._60dp),
                 textPaint

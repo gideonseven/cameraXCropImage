@@ -1,8 +1,10 @@
 <resources>
-    <string name="app_name">cameraXCropImage</string>
+    <string name="app_name" translatable="false">cameraXCropImage</string>
     <string name="take_photo" translatable="false">Take Photo</string>
-    <string name="retake" translatable="false">Retake</string>
+    <string name="retake_photo" translatable="false">Retake Photo</string>
     <string name="close" translatable="false">Close</string>
     <string name="title_activity_preview" translatable="false">PREVIEW ACTIVITY</string>
+    <string name="title_activity_camera" translatable="false">CAMERA ACTIVITY</string>
     <string name="processing_image" translatable="false">PROCESSING IMAGE. . .</string>
+    <string name="container_image" translatable="false">container for displaying result from camera</string>
 </resources>

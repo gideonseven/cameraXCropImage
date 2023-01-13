@@ -15,8 +15,9 @@
         android:theme="@style/Theme.CameraXCropImage.NoActionBar"
         tools:targetApi="31">
         <activity
-            android:name=".MainActivity"
-            android:exported="true">
+            android:name=".CameraActivity"
+            android:exported="true"
+            android:theme="@style/Theme.CameraXCropImage.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -26,7 +27,7 @@
         <activity
             android:name=".PreviewActivity"
             android:exported="false"
-            android:label="@string/title_activity_preview"
+            android:label="@string/title_activity_camera"
             android:theme="@style/Theme.CameraXCropImage.NoActionBar" />
     </application>
 

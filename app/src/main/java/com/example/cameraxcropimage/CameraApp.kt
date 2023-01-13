@@ -9,7 +9,7 @@ import timber.log.Timber
  * gideon@cicil.co.id
  * https://www.cicil.co.id/
  */
- class CameraApp : Application() {
+class CameraApp : Application() {
     override fun onCreate() {
         super.onCreate()
         if (BuildConfig.DEBUG) {

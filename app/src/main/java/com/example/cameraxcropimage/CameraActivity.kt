@@ -7,7 +7,6 @@ import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.util.Rational
 import android.view.Surface
 import android.view.View
@@ -17,22 +16,24 @@ import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.example.cameraxcropimage.databinding.ActivityMainBinding
+import com.example.cameraxcropimage.databinding.ActivityCameraBinding
+import kotlinx.coroutines.*
+import timber.log.Timber
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
-class MainActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityMainBinding
+class CameraActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityCameraBinding
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
     private var imageCapture: ImageCapture? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
+        binding = ActivityCameraBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
 
@@ -58,13 +59,53 @@ class MainActivity : AppCompatActivity() {
         cameraExecutor = Executors.newSingleThreadExecutor()
     }
 
+
+    //  do your thing when permission accepted / not
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_CODE_PERMISSIONS) {
+            if (allPermissionsGranted()) {
+                startCamera()
+            } else {
+                Toast.makeText(
+                    this,
+                    "Permissions not granted by the user.",
+                    Toast.LENGTH_SHORT
+                ).show()
+                // finish()
+            }
+            return
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        // don't forget to shut camera down
+        cameraExecutor.shutdown()
+    }
+
+    // create save directory for file
+    private fun getOutputDirectory(): File {
+        val mediaDir = externalMediaDirs.firstOrNull().let {
+            File(
+                it,
+                resources.getString(R.string.app_name)
+            ).apply { mkdirs() }
+        }
+        return if (mediaDir.exists())
+            mediaDir else filesDir
+    }
+
     // take your photo
     @SuppressLint("RestrictedApi")
     private fun takePhoto() {
-
-        binding.tvProcessingImage.visibility = View.VISIBLE
-        binding.btnOk.visibility = View.GONE
-
+        // show loading
+        showLoading(true)
 
         // Get a stable reference of the modifiable image capture use case
         val imageCapture = imageCapture ?: return
@@ -86,15 +127,16 @@ class MainActivity : AppCompatActivity() {
             ContextCompat.getMainExecutor(this),
             object : ImageCapture.OnImageSavedCallback {
                 override fun onError(exc: ImageCaptureException) {
-                    Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
+                    Timber.e(exc, "Photo capture failed: %s", exc.message)
                 }
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                    //get saved uri
                     val savedUri = Uri.fromFile(photoFile)
-                    onImageCaptured(savedUri, photoFile)
                     val msg = "Photo capture succeeded: $savedUri"
-                    Toast.makeText(this@MainActivity, msg, Toast.LENGTH_SHORT).show()
-                    Log.d(TAG, msg)
+                    Timber.d(msg)
+                    //go to preview activity
+                    goToPreviewActivity(savedUri, photoFile)
                 }
             })
     }
@@ -106,19 +148,6 @@ class MainActivity : AppCompatActivity() {
             this, it
         ) == PackageManager.PERMISSION_GRANTED
     }
-
-    // create / set save directory for file
-    private fun getOutputDirectory(): File {
-        val mediaDir = externalMediaDirs.firstOrNull().let {
-            File(
-                it,
-                resources.getString(R.string.app_name)
-            ).apply { mkdirs() }
-        }
-        return if (mediaDir.exists())
-            mediaDir else filesDir
-    }
-
 
     // build cameraX with your desired attributes
     @SuppressLint("UnsafeExperimentalUsageError", "RestrictedApi")
@@ -192,71 +221,45 @@ class MainActivity : AppCompatActivity() {
                 )
 
             } catch (exc: Exception) {
-                Log.e(TAG, "Use case binding failed", exc)
+                Timber.e(exc, "Use case binding failed")
             }
 
         }, ContextCompat.getMainExecutor(this))
     }
 
-    //  do your thing when permission accepted / not
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQUEST_CODE_PERMISSIONS) {
-            if (allPermissionsGranted()) {
-                startCamera()
-            } else {
-                Toast.makeText(
-                    this,
-                    "Permissions not granted by the user.",
-                    Toast.LENGTH_SHORT
-                ).show()
-                // finish()
+    // crop image and go to preview activity
+    @OptIn(DelicateCoroutinesApi::class)
+    private fun goToPreviewActivity(uri: Uri, photoFile: File) {
+        uri.path?.let { path ->
+
+            //to avoid heavy task related BITMAP on main thread
+            //assign to IO
+            GlobalScope.launch(Dispatchers.IO) {
+                val bmImg = rotateBitmap(BitmapFactory.decodeFile(path), isBackCamera = true)
+                println("IMAGE SAVED WIDTH ${bmImg.width}")
+                println("IMAGE SAVED HEIGHT ${bmImg.height}")
+                val bytes = cropImage(bmImg, binding.borderView)
+                val croppedImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                saveImageBitmap(croppedImage, photoFile)
+
+                launch(Dispatchers.Main) {
+                    // hide loading
+                    showLoading(false)
+
+                    // open preview activity with extra uri
+                    val intent = Intent(applicationContext, PreviewActivity::class.java)
+                    intent.putExtra("key", uri.toString())
+                    startActivity(intent)
+                }
             }
-            return
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-
-        // don't forget to shut camera down
-        cameraExecutor.shutdown()
-    }
-
-    // do other thing after object has been captured
-    private fun onImageCaptured(uri: Uri, photoFile: File) {
-
-        // set to bitmap image, with rotation,
-        // by default image will be rotated if saved to bitmap, so the image should be rotated back
-        // to it's default angle
-        val bmImg = rotateBitmap(BitmapFactory.decodeFile(uri.path!!), isBackCamera = true)
-
-        // do the cropping
-        val bytes = cropImage(
-            bitmap = bmImg,
-            guideline = binding.borderView
-        )
-
-        val croppedImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-
-        // save cropped image
-        saveImageBitmap(croppedImage, photoFile)
-
-        binding.tvProcessingImage.visibility = View.GONE
-        binding.btnOk.visibility = View.VISIBLE
-
-        // open preview activity with extra uri
-        val intent = Intent(applicationContext, PreviewActivity::class.java)
-        intent.putExtra("key", uri.toString())
-        startActivity(intent)
+    private fun showLoading(isShown: Boolean) {
+        binding.tvProcessingImage.visibility = if (isShown) View.VISIBLE else View.GONE
     }
 
     companion object {
-        private const val TAG = "AddTaskDialog"
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
         private const val REQUEST_CODE_PERMISSIONS = 10
         private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)

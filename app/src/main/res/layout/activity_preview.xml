@@ -7,19 +7,21 @@
 
     <ImageView
         android:id="@+id/iv"
-        android:layout_width="@dimen/card_width"
-        android:layout_height="@dimen/card_height"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:contentDescription="@string/container_image"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btn_retake"
+        android:id="@+id/btn_take"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="16dp"
-        android:text="@string/retake"
+        android:layout_marginBottom="42dp"
+        android:text="@string/retake_photo"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
