@@ -12,6 +12,4 @@ Simple Example of Capturing Image using CameraX, crop it match the size of guide
 
 ### Demo ###
 
-https://user-images.githubusercontent.com/13301518/210706445-1c75ea64-9cdb-466a-ab97-52868c47d911.mp4
-
-### strongly suggest to use real device, if use emulator cropping not working well
+https://user-images.githubusercontent.com/13301518/212396022-776c8e9c-fd67-478e-975b-4766798b96c5.mp4
